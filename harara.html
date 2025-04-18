@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>إعدادات الفقاسة</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #f0fdfa;
+      padding: 1rem;
+      margin: 0;
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.2rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #0d9488;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      margin-top: 1rem;
+      font-weight: bold;
+      color: #0f766e;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 0.5rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    input:focus {
+      border-color: #0d9488;
+      outline: none;
+    }
+
+    .btn-save {
+      margin-top: 1.2rem;
+      padding: 12px;
+      background: #0d9488;
+      color: #fff;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .cards {
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: #e0f2f1;
+      border: 1px solid #10b981;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      color: #047857;
+    }
+
+    .card-buttons {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .card button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .edit-btn {
+      background: #facc15;
+    }
+
+    .delete-btn {
+      background: #ef4444;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 0.5rem; }
+      .container { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>إعدادات الفقاسة</h2>
+
+    <div class="input-group">
+      <label for="settingName">اسم الإعداد</label>
+      <input type="text" id="settingName" placeholder="مثال: دفعة مارس 1">
+    </div>
+
+    <div class="section-title">الحرارة والرطوبة</div>
+    <div class="column" id="tempHumInputs">
+      <div class="input-group"><label for="P1">P1</label><input type="number" id="P1"></div>
+      <div class="input-group"><label for="P2">P2</label><input type="number" id="P2"></div>
+      <div class="input-group"><label for="P3">P3</label><input type="number" id="P3"></div>
+      <div class="input-group"><label for="P4">P4</label><input type="number" id="P4"></div>
+      <div class="input-group"><label for="P5">P5</label><input type="number" id="P5"></div>
+      <div class="input-group"><label for="P6">P6</label><input type="number" id="P6"></div>
+      <div class="input-group"><label for="P7">P7</label><input type="number" id="P7"></div>
+      <div class="input-group"><label for="P8">P8</label><input type="number" id="P8"></div>
+      <div class="input-group"><label for="P9">P9</label><input type="number" id="P9"></div>
+    </div>
+
+    <div class="section-title">إعدادات التقليب</div>
+    <div class="column" id="turningInputs">
+      <div class="input-group"><label for="F1">F1</label><input type="number" id="F1"></div>
+      <div class="input-group"><label for="F2">F2</label><input type="number" id="F2"></div>
+      <div class="input-group"><label for="F3">F3</label><input type="number" id="F3"></div>
+      <div class="input-group"><label for="F4">F4</label><input type="number" id="F4"></div>
+    </div>
+
+    <button class="btn-save" onclick="saveSetting()">حفظ الإعداد</button>
+
+    <div class="cards" id="cardsContainer"></div>
+  </div>
+
+  <script>
+    const keys = ['P1','P2','P3','P4','P5','P6','P7','P8','P9','F1','F2','F3','F4'];
+
+    function saveSetting() {
+      const name = document.getElementById("settingName").value.trim();
+      if (!name) {
+        alert("يرجى إدخال اسم الإعداد!");
+        return;
+      }
+
+      const data = {};
+      keys.forEach(key => {
+        data[key] = document.getElementById(key).value;
+      });
+
+      localStorage.setItem(`incubator_${name}`, JSON.stringify(data));
+      renderCards();
+      clearInputs();
+    }
+
+    function clearInputs() {
+      document.getElementById("settingName").value = "";
+      keys.forEach(key => document.getElementById(key).value = "");
+    }
+
+    function renderCards() {
+      const container = document.getElementById("cardsContainer");
+      container.innerHTML = "";
+
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith("incubator_")) {
+          const name = key.replace("incubator_", "");
+          const data = JSON.parse(localStorage.getItem(key));
+
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const title = document.createElement("h3");
+          title.textContent = name;
+          card.appendChild(title);
+
+          for (const k in data) {
+            const item = document.createElement("div");
+            item.textContent = `${k}: ${data[k]}`;
+            card.appendChild(item);
+          }
+
+          const buttons = document.createElement("div");
+          buttons.className = "card-buttons";
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "edit-btn";
+          editBtn.textContent = "تعديل";
+          editBtn.onclick = () => {
+            document.getElementById("settingName").value = name;
+            keys.forEach(k => {
+              document.getElementById(k).value = data[k] || "";
+            });
+            localStorage.removeItem(key);
+            renderCards();
+          };
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "delete-btn";
+          deleteBtn.textContent = "حذف";
+          deleteBtn.onclick = () => {
+            if (confirm(`هل تريد حذف الإعداد "${name}"؟`)) {
+              localStorage.removeItem(key);
+              renderCards();
+            }
+          };
+
+          buttons.appendChild(editBtn);
+          buttons.appendChild(deleteBtn);
+          card.appendChild(buttons);
+
+          container.appendChild(card);
+        }
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", renderCards);
+  </script>
+</body>
+</html>
